@@ -59,29 +59,43 @@ def merge_with_prices(df):
 
 
     #now finally add the price of the product to dataframe1
-    if df['month'] == unpivoted_df['month'] and df['product_code'] == unpivoted_df['Product Code']:
-        df['Ticket Cost'] = unpivoted_df['Price']
+    # Rename columns in unpivoted_df to match df
+    unpivoted_df.rename(columns={'Product Code': 'product_code'}, inplace=True)
+
+    unpivoted_df['product_code'] = unpivoted_df['product_code'].apply(strip_language_code)
 
 
+
+
+
+    # Merge the dataframes
+    merged_df = pd.merge(df, unpivoted_df, on=['product_code', 'month'], how='left')
+
+    # Rename the 'Price' column to 'Ticket Price'
+    merged_df.rename(columns={'Price': 'Ticket Price'}, inplace=True)
+    print('aaaa')
 
 
 
     price_df.to_excel('price.xlsx', index= False)
     unpivoted_df.to_excel('unpivoted.xlsx', index= False)
 
+    return merged_df
 
 
 
+def strip_language_code(code):
+    #
+    
+    languages = ['GR', 'EN', 'FR', 'DE', 'IT', 'ES']
+
+    if '_'  in code:
+        return code.split('_')[0]
 
 
-
-
-
-    return df
-
-
-
-
+    if code[-2:] in languages:
+        return code[:-3]
+    return code
 
 
 
