@@ -35,7 +35,7 @@ def read_df1():
 
 def merge_with_prices(df):
     #add a price to each listing, based on the month and the product code we have
-    price_df = pd.read_excel('Booking Stats.xlsx', sheet_name= 'Codes & Prices')
+    price_df = pd.read_excel('unimportant/Booking Stats.xlsx', sheet_name= 'Codes & Prices')
     print(price_df.columns)
 
     #map shortcuts to full month names
@@ -101,8 +101,19 @@ def strip_language_code(code):
 
 
 def read_df2():
+    #reads the second dataframe, df2, which contains the reviews
 
-    dataframe2 = pd.read_excel('unimportant/reviews data.xlsx')
+    sheets = pd.read_excel('unimportant/reviews data.xlsx', sheet_name=None)
+
+    dataframes = []
+
+    #iterate over the sheets, create a new column, and then append them to the bigger dataframe
+    for sheet_name, df in sheets.items():
+        df['month'] = sheet_name
+        dataframes.append(df)
+
+    dataframe2 = pd.concat(dataframes, ignore_index=True)
+
     return dataframe2
 
 
