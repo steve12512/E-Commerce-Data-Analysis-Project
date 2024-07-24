@@ -113,7 +113,8 @@ def read_df2():
         dataframes.append(df)
 
     dataframe2 = pd.concat(dataframes, ignore_index=True)
-
+    dataframe2.rename(columns = {'Unnamed: 3' : 'Reviews'}, inplace= True)
+    dataframe2[['Product Code', 'Name of Product']] = dataframe2['Unnamed: 1'].str.split('|', expand=True)
     return dataframe2
 
 
