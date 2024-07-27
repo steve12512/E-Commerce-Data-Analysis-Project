@@ -36,7 +36,7 @@ def read_df1():
 def merge_with_prices(df):
     #add a price to each listing, based on the month and the product code we have
     price_df = pd.read_excel('unimportant/Booking Stats.xlsx', sheet_name= 'Codes & Prices')
-    print(price_df.columns)
+    print(price_df.columns) 
 
     #map shortcuts to full month names
     month_mapping = {
@@ -62,14 +62,15 @@ def merge_with_prices(df):
     unpivoted_df.rename(columns={'Product Code': 'product_code'}, inplace=True)
 
     #remove language shortcuts and '_'s in both dataframes, so that their product codes match
-    unpivoted_df['product_code'] = unpivoted_df['product_code'].apply(strip_language_code)
+    unpivoted_df['split_product_code'] = unpivoted_df['product_code'].apply(strip_language_code)
     #df['product_code'] = df['product_code'].str.replace(r"_.*|([A-Z]{2})$", "", regex=True)
 
-
-
+    #rename the df's column Product Code so that it matches merged_df's column
+    print(df.columns)
+    df.rename(columns= {'product_code': 'split_product_code'}, inplace = True)
 
     #now finally add the price of the product to dataframe1
-    merged_df = pd.merge(df, unpivoted_df, on=['product_code', 'month'], how='left')
+    merged_df = pd.merge(df, unpivoted_df, on=['split_product_code', 'month'], how='left')
 
     # Rename the 'Price' column to 'Ticket Price'
     merged_df.rename(columns={'Price': 'Ticket Price'}, inplace=True)
