@@ -27,6 +27,11 @@ def read_df1():
     
     # Concatenate all DataFrames into a single DataFrame
     combined_df = pd.concat(df_list, ignore_index=True)
+    
+    #remove listings where both retail and net price are null
+    combined_df = combined_df.dropna(subset=['retail_price', 'net_price'], how='all')
+
+    #add ticket price
     combined_df = merge_with_prices(combined_df)
 
     #combined_df.drop_duplicates()
@@ -34,7 +39,7 @@ def read_df1():
 
 
 def merge_with_prices(df):
-    #add a price to each listing, based on the month and the product code we have
+    #add a ticket price to each listing, based on the month and the product code we have
     price_df = pd.read_excel('unimportant/Booking Stats.xlsx', sheet_name= 'Codes & Prices')
     print(price_df.columns) 
 
@@ -66,7 +71,7 @@ def merge_with_prices(df):
     #df['product_code'] = df['product_code'].str.replace(r"_.*|([A-Z]{2})$", "", regex=True)
 
     #rename the df's column Product Code so that it matches merged_df's column
-    print(df.columns)
+    #print(df.columns)
     df.rename(columns= {'product_code': 'split_product_code'}, inplace = True)
 
     #now finally add the price of the product to dataframe1
@@ -78,6 +83,9 @@ def merge_with_prices(df):
 
     price_df.to_excel('unimportant/price.xlsx', index= False)
     unpivoted_df.to_excel('unimportant/unpivoted.xlsx', index= False)
+    
+    #add a column representing the profit per tour
+    #merged_df['Profit'] = merged_df[]
 
     return merged_df
 
@@ -94,6 +102,7 @@ def strip_language_code(code):
 
     if code[-2:] in languages:
         return code[:-2]
+        
     return code
 
 
@@ -119,10 +128,20 @@ def read_df2():
     return dataframe2
 
 
+def successful_tour_looks_like():
+    #how does a sucessful tour look like? to begin with, keep a copy of dataframe1
+    df = dataframe1.copy()
 
 
 
 
+
+
+
+
+
+
+    return None
 
 
 
@@ -135,3 +154,6 @@ def save_to_excel(dataframe1, dataframe2):
 # From here and on, our script starts executing
 dataframe1, dataframe2 = read_files()
 save_to_excel(dataframe1, dataframe2)
+
+#how does a successful tour look like?
+successful_tour_looks_like()
