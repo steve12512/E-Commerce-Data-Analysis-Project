@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+
 
 def read_files():
     # This function reads our xlsx files and saves them as dataframe objects
@@ -41,7 +43,6 @@ def read_df1():
 def merge_with_prices(df):
     #add a ticket price to each listing, based on the month and the product code we have
     price_df = pd.read_excel('unimportant/Booking Stats.xlsx', sheet_name= 'Codes & Prices')
-    print(price_df.columns) 
 
     #map shortcuts to full month names
     month_mapping = {
@@ -71,7 +72,6 @@ def merge_with_prices(df):
     #df['product_code'] = df['product_code'].str.replace(r"_.*|([A-Z]{2})$", "", regex=True)
 
     #rename the df's column Product Code so that it matches merged_df's column
-    #print(df.columns)
     df.rename(columns= {'product_code': 'split_product_code'}, inplace = True)
 
     #now finally add the price of the product to dataframe1
@@ -79,11 +79,27 @@ def merge_with_prices(df):
 
     # Rename the 'Price' column to 'Ticket Price'
     merged_df.rename(columns={'Price': 'Ticket Price'}, inplace=True)
-
+    
 
     price_df.to_excel('unimportant/price.xlsx', index= False)
     unpivoted_df.to_excel('unimportant/unpivoted.xlsx', index= False)
     
+    #that logic will not work for all listings. so for the listings that are still null, work in a different way
+    #find the rows for which Ticket Price is null. then, for these rows, take their product code as a string and find the first ticket dataframe listing that has a product code column that matches that string.
+    null_price_rows = merged_df['Ticket Price'].isnull()
+    merged_df['Ticket Price'] = merged_df['Ticket Price'].astype(str)
+
+    print(merged_df.dtypes)
+    #keep a variable to count the execution of the lambda function. if we are on the first, keep track of the month. if we are on the second, use the price of another month(considering it is the same)
+    count = 0
+    merged_df.loc[null_price_rows, 'Ticket Price'] = merged_df.loc[null_price_rows].apply(
+    lambda row: search_in_string(row, unpivoted_df), axis=1)
+
+    #increment the count variable, and execute the lambda function again, this time not caring about the month(since for the corresponding month, no price was found, and we take it that it its price is approximate to one of its neighbours)
+    count +=1
+    
+
+
     #add a column representing the profit per tour
     #merged_df['Profit'] = merged_df[]
 
@@ -106,6 +122,20 @@ def strip_language_code(code):
     return code
 
 
+def search_in_string(row, unpivoted_df):
+    #search for the string within the strings of the column product code, in the prices dataframe
+    #save the product code and the month that are our keys.
+    key = row['product_code']
+    month = row['month']
+    
+    filtered_df = unpivoted_df[(unpivoted_df['product_code'] == key) & (unpivoted_df['month'] == month)]
+
+
+    if not filtered_df.empty:
+        # If there's a match, return the first price
+        return filtered_df['Price'].iloc[0]
+    else:
+        return np.nan
 
 
 
