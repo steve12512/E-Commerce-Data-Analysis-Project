@@ -185,7 +185,6 @@ def search_in_string(row, unpivoted_df, count):
 def parsing_df1(combined_df):
     #this function will change the variable types of dataframe1 before saving in order to reduce the excel size.
     numeric_cols = ['seller_id', 'num_of_travellers', 'retail_price', 'net_price', 'Profit']
-
     combined_df[numeric_cols] = combined_df[numeric_cols].astype('float64')
     return combined_df
 
@@ -194,7 +193,6 @@ def read_df2(dataframe1):
     #reads the second dataframe, df2, which contains the reviews
 
     sheets = pd.read_excel('unimportant/reviews data.xlsx', sheet_name=None)
-
     dataframes = []
 
     #iterate over the sheets, create a new column, and then append them to the bigger dataframe
@@ -214,10 +212,20 @@ def read_df2(dataframe1):
     dataframe2['split_product_code'] = dataframe2['Product Code'].apply(lambda x: x.split('_')[0])
 
 
+    dataframe1['split_product_code'] = dataframe1['split_product_code'].str.strip().str.lower()
+    dataframe2['split_product_code'] = dataframe2['split_product_code'].str.strip().str.lower()
+
+
+
+
+
+
+
+
     #create a new column for the country and the language of the listing
     dataframe2 = pd.merge(dataframe2, dataframe1[['split_product_code', 'Country', 'language']], on='split_product_code', how='left')
 
-    
+
 
 
 
