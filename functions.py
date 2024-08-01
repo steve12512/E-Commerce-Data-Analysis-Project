@@ -6,7 +6,7 @@ import numpy as np
 def read_files():
     # This function reads our xlsx files and saves them as dataframe objects
     dataframe1 = read_df1()
-    dataframe2 = read_df2()
+    dataframe2 = read_df2(dataframe1) #dataframe2 needs to have access to dataframe1 for the merging of their product codes
     return dataframe1, dataframe2
 
 def read_df1():
@@ -37,7 +37,11 @@ def read_df1():
     #add ticket price
     combined_df = merge_with_prices(combined_df)
 
-    #combined_df.drop_duplicates()
+    #drop duplicated and then change variable types to preserve memory
+    combined_df = combined_df.drop_duplicates()
+    combined_df = parsing_df1(combined_df)    
+
+    print(combined_df.dtypes)
     return combined_df
 
 
@@ -85,8 +89,6 @@ def merge_with_prices(df):
     price_df.to_excel('unimportant/price.xlsx', index= False)
     unpivoted_df.to_excel('unimportant/unpivoted.xlsx', index= False)
     
-    print(merged_df.dtypes)
-
     #first match null values, and then remove the ones that cant be matched
     merged_df = edit_nulls(merged_df, unpivoted_df)
 
@@ -180,10 +182,15 @@ def search_in_string(row, unpivoted_df, count):
     else:
         return np.nan
 
+def parsing_df1(combined_df):
+    #this function will change the variable types of dataframe1 before saving in order to reduce the excel size.
+    numeric_cols = ['seller_id', 'num_of_travellers', 'retail_price', 'net_price', 'Profit']
+
+    combined_df[numeric_cols] = combined_df[numeric_cols].astype('float64')
+    return combined_df
 
 
-
-def read_df2():
+def read_df2(dataframe1):
     #reads the second dataframe, df2, which contains the reviews
 
     sheets = pd.read_excel('unimportant/reviews data.xlsx', sheet_name=None)
@@ -194,10 +201,30 @@ def read_df2():
     for sheet_name, df in sheets.items():
         df['month'] = sheet_name
         dataframes.append(df)
-
+    
+    #split some columns and rename others
     dataframe2 = pd.concat(dataframes, ignore_index=True)
-    dataframe2.rename(columns = {'Unnamed: 3' : 'Reviews'}, inplace= True)
-    dataframe2[['Product Code', 'Name of Product']] = dataframe2['Unnamed: 1'].str.split('|', expand=True)
+    dataframe2.rename(columns = {'Unnamed: 3' : 'Reviews', 'Unnamed: 1' : 'Product Code and Name', 'Unnamed2': 'Review', 'Unnamed: 6' : 'Experience'}, inplace= True)
+    dataframe2[['Product Code', 'Name of Product']] = dataframe2['Product Code and Name'].str.split('|', expand=True)
+
+    #cast as string in order to later split the product code
+    dataframe2['Product Code'] = dataframe2['Product Code'].astype(str)
+
+    #split dataframe2's product codes 
+    dataframe2['split_product_code'] = dataframe2['Product Code'].apply(lambda x: x.split('_')[0])
+
+
+    #create a new column for the country and the language of the listing
+    dataframe2 = pd.merge(dataframe2, dataframe1[['split_product_code', 'Country', 'language']], on='split_product_code', how='left')
+
+    
+
+
+
+
+
+    dataframe2 = dataframe2.drop_duplicates()
+
     return dataframe2
 
 

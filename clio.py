@@ -18,3 +18,6 @@ save_to_excel(dataframe1, dataframe2)
 
 #how does a successful tour look like?
 successful_tour_looks_like(dataframe1)
+# Count how many values in dataframe1['split_product_code'] are in dataframe2['Product Code']
+#match_count = dataframe2['Product Code'].isin(dataframe1['split_product_code']).sum()
+#print("Number of matches:", match_count)
