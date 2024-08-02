@@ -236,15 +236,37 @@ def read_df2(dataframe1):
     return dataframe2
 
 
-def successful_tour_looks_like(dataframe1):
-    #how does a sucessful tour look like? to begin with, keep a copy of dataframe1
-    df = dataframe1.copy()
+def successful_tour_looks_like(dataframe1, dataframe2):
+    #how does a sucessful tour look like? filter the listings in df1 that have a profit higher than the average. then groupby country and month, find insights about the listings with the most important being the sum of profit, and then sort them in descending order
+    # to begin with, keep a copy of dataframe1
+    df1 = dataframe1.copy()
+    df2 = dataframe2.copy()
+
+    #calculate the profit mean for the tours in dataframe1
+    mean = df1['Profit'].mean()
+    
+    #filter the listings in dataframe1 that have a profit higher than the average
+    df1 = df1[df1['Profit'] > mean]
+
+    #calculate the number of products per listing
+    df1['num_products'] = df1['product_code'].apply(lambda x: len(x.split('_')))
+
+    #groupby country and month, and find the average number of travellers, the language of the product
+    df1 = df1.groupby(['Country', 'month']).agg(
+        average_travellers=('num_of_travellers', 'mean'), 
+        Total_Travellers=('num_of_travellers', 'size'),   
+        Average_number_of_products=('num_products', 'mean'),
+        Total_profit = ('Profit', 'sum')
+    ).reset_index()
+
+    #sort values based on average profit, descending
+    df1.sort_values(by = 'Total_profit', ascending = False)
+
+    #keep the 3 most profitable listings per groupby element (we have to fit it in a presentation!!!)
+    df1 = df1.groupby(['Country', 'month']).head(3).reset_index(drop=True)
 
 
-
-
-
-
+    df1.to_excel('successful_tour_looks_like.xlsx', index = False)
 
 
 
