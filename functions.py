@@ -262,16 +262,64 @@ def successful_tour_looks_like(dataframe1, dataframe2):
     #sort values based on average profit, descending
     df1.sort_values(by = 'Total_profit', ascending = False)
 
-    #keep the 3 most profitable listings per groupby element (we have to fit it in a presentation!!!)
-    df1 = df1.groupby(['Country', 'month']).head(3).reset_index(drop=True)
+    #keep the 3 most profitable listings per groupby element (we have to fit it in a presentation!!!) NOT NECESSARY STEP THOUGH
+    #df1 = df1.groupby(['Country', 'month']).head(3).reset_index(drop=True)s
 
-
-    df1.to_excel('successful_tour_looks_like.xlsx', index = False)
-
-
-
+    df1.to_excel('questions/successful_tour_looks_like.xlsx', index = False)
 
     return None
+
+def which_tours_go_together(dataframe1, dataframe2):
+    #which tours go together? first make a copy of our dataframes
+
+    df1 = dataframe1.copy()
+    df2 = dataframe2.copy()
+
+    #split product codes on _, create a new column for each combination and count the number of its occurances
+    df1['product_combinations'] = df1['product_code'].apply(lambda x: tuple(sorted(x.split('_'))))
+    grouped_df = df1['product_combinations'].value_counts().reset_index(name='Occurrences')
+    grouped_df.columns = ['Product_Combination', 'Occurrences']
+
+    #filter for combinations with at least 2 products
+    grouped_df = grouped_df[grouped_df['Product_Combination'].apply(lambda x: len(x) > 1)]
+    print(grouped_df.dtypes)
+
+    code_to_tour = dict(zip(df2['Product Code'], df2['Name of Product']))
+
+
+    #for each product code in product code combination, map it to its corresponding tour name, and after having done that for all codes, concatenate the string
+    grouped_df['tour_names'] = grouped_df['Product_Combination'].apply(lambda x: get_tour_names(x, code_to_tour))
+
+
+    #sort the DataFrame by the number of occurrences
+    grouped_df = grouped_df.sort_values(by='Occurrences', ascending=False)
+
+    #save  to an Excel file
+    grouped_df.to_excel('questions/tours_go_together.xlsx', index=False)
+
+    return None
+
+
+
+def get_tour_names(product_codes, code_to_tour):
+        #map to tour names
+        tour_names = [code_to_tour.get(code, code_to_tour[code]) for code in product_codes]
+        return ', '.join(tour_names)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
