@@ -336,7 +336,9 @@ def save_to_excel(dataframe1, dataframe2):
     dataframe2.to_excel('dataframe2.xlsx', index=False)
 
 
-def edit_df1(df1):
+def edit_dfs(df1, df2):
     #change the structure of dataframe1 so as to have split product code saved as a set containing all of split product codes
     df1['split_product_codes'] = df1['product_code'].apply(lambda x: set(x.split('_')))
-    return df1
+    df2['split_product_codes'] = df2['Product Code'].apply(lambda x: set(x.split('_')))
+
+    return df1, df2
