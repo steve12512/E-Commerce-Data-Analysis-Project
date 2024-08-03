@@ -277,24 +277,19 @@ def which_tours_go_together(dataframe1, dataframe2):
 
     #filter for combinations with at least 2 products
     grouped_df = grouped_df[grouped_df['Product_Combination'].apply(lambda x: len(x) > 1)]
-    print(grouped_df.dtypes)
 
+    #store a dictionary to map product codes to their names
     code_to_tour = dict(zip(df2['split_product_code'], df2['Name of Product']))
 
-
     #for each product code in product code combination, map it to its corresponding tour name, and after having done that for all codes, concatenate the string
-    grouped_df['tour_names'] = grouped_df['Product_Combination'].apply(lambda x: get_tour_names(x, code_to_tour, df2))
-
-    #repeat, this time only in order to get the whole package profit
-    
+    grouped_df['tour_names'] = grouped_df['Product_Combination'].apply(lambda x: get_tour_names(x, code_to_tour, df2))    
 
     #sort the DataFrame by the number of occurrences
     grouped_df = grouped_df.sort_values(by='Occurrences', ascending=False)
 
     #save  to an Excel file
     grouped_df.to_excel('questions/tours_go_together.xlsx', index=False)
-
-    return None
+    return grouped_df
 
 
 def get_tour_names(product_codes, code_to_tour, df2):
@@ -342,3 +337,38 @@ def edit_dfs(df1, df2):
     df2['split_product_codes'] = df2['Product Code'].apply(lambda x: set(x.split('_')))
 
     return df1, df2
+
+def add_df2_profit(dataframe1, dataframe2):
+    #add a profit column to df2. copy our dataframes
+    
+    df1 = dataframe1.copy()
+    df2 = dataframe2.copy()
+
+    #first try to search for the whole  product code
+    df2['Profit'] = df1['product_code'] if df2['Product Code'] == df1['product_code'] else df2['split_product_codes'].apply(function_name)
+
+
+
+
+
+
+
+
+
+def which_tours_do_we_recommend_to_a_traveller(dataframe1, dataframe2, go_together):
+    #which tours do we recommend to a traveller? first make a copy of our dataframes to operate upon
+
+    df1= dataframe1.copy()
+    df2 = dataframe2.copy()
+    together = go_together.copy()
+
+    #filter the listings in df2 that have had a rating higher than 4
+    liked_tours = df2[df2['Experience'].isin(['Excellent (5 stars)', 'Positive (4 stars)', 'Positive \n(4 stars)' , 'Excellent (5*)', 'Positive (4*)', '5*', '4*'])]
+
+
+
+
+
+
+
+    liked_tours.to_excel('unimportant/liked.xlsx', index =False)
