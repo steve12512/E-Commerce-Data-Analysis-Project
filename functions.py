@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from fuzzywuzzy import process
 
 #this is the file that contains the functions we will be using in our script
 
@@ -211,13 +212,7 @@ def read_df2(dataframe1):
     #split dataframe2's product codes 
     dataframe2['split_product_code'] = dataframe2['Product Code'].apply(lambda x: x.split('_')[0])
 
-
-    dataframe1['split_product_code'] = dataframe1['split_product_code'].str.strip().str.lower()
-    dataframe2['split_product_code'] = dataframe2['split_product_code'].str.strip().str.lower()
-
-
-
-
+    
 
 
 
@@ -284,11 +279,11 @@ def which_tours_go_together(dataframe1, dataframe2):
     grouped_df = grouped_df[grouped_df['Product_Combination'].apply(lambda x: len(x) > 1)]
     print(grouped_df.dtypes)
 
-    code_to_tour = dict(zip(df2['Product Code'], df2['Name of Product']))
+    code_to_tour = dict(zip(df2['split_product_code'], df2['Name of Product']))
 
 
     #for each product code in product code combination, map it to its corresponding tour name, and after having done that for all codes, concatenate the string
-    grouped_df['tour_names'] = grouped_df['Product_Combination'].apply(lambda x: get_tour_names(x, code_to_tour))
+    grouped_df['tour_names'] = grouped_df['Product_Combination'].apply(lambda x: get_tour_names(x, code_to_tour, df2))
 
 
     #sort the DataFrame by the number of occurrences
@@ -300,13 +295,39 @@ def which_tours_go_together(dataframe1, dataframe2):
     return None
 
 
+def get_tour_names(product_codes, code_to_tour, df2):
+    #this function maps product codes to their tour names for whole packaged bought together
 
-def get_tour_names(product_codes, code_to_tour):
-        #map to tour names
-        tour_names = [code_to_tour.get(code, code_to_tour[code]) for code in product_codes]
-        return ', '.join(tour_names)
+    tour_names = []
+    for code in product_codes:
+        #remove  unwanted characters
+        clean_code = code.replace('(', '').replace(')', '').replace('\'', '').strip()
+        if clean_code in code_to_tour:
+            tour_names.append(code_to_tour[clean_code])
+            continue
+        else:
+            #remove the last 2 letter that signify the language if they are letters  in order to get better matching
+            if clean_code[-2:] in ['IT', 'FR', 'GR', 'EN', 'ES', 'CN']:
+                clean_code = clean_code[:-2]
 
+            if clean_code in code_to_tour:
+                tour_names.append(code_to_tour[clean_code])    
+                continue       
+            else:
+                #else search in a different column of dataframe2 that contains both names and codes, seperated by |
+                matching_row = df2[df2['Product Code and Name'].str.contains(clean_code, na=False)]
+                if not matching_row.empty:
+                    tour_name = matching_row.iloc[0]['Product Code and Name'].split('|')[1].strip()
+                    tour_names.append(tour_name)    
+                    continue
 
+            #fuzzy matching as a fallback if we still havent found the word
+            closest_match, confidence = process.extractOne(clean_code, code_to_tour.keys())
+            if confidence > 80:  # Confidence threshold for fuzzy matching
+                tour_names.append(code_to_tour[closest_match])
+            else:
+                tour_names.append('Unknown')  # Or any other handling for unmatched codes
+    return ', '.join(tour_names)
 
 
 
