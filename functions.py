@@ -285,6 +285,8 @@ def which_tours_go_together(dataframe1, dataframe2):
     #for each product code in product code combination, map it to its corresponding tour name, and after having done that for all codes, concatenate the string
     grouped_df['tour_names'] = grouped_df['Product_Combination'].apply(lambda x: get_tour_names(x, code_to_tour, df2))
 
+    #repeat, this time only in order to get the whole package profit
+    
 
     #sort the DataFrame by the number of occurrences
     grouped_df = grouped_df.sort_values(by='Occurrences', ascending=False)
@@ -329,22 +331,12 @@ def get_tour_names(product_codes, code_to_tour, df2):
                 tour_names.append('Unknown')  # Or any other handling for unmatched codes
     return ', '.join(tour_names)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def save_to_excel(dataframe1, dataframe2):
     dataframe1.to_excel('dataframe1.xlsx', index=False)
     dataframe2.to_excel('dataframe2.xlsx', index=False)
+
+
+def edit_df1(df1):
+    #change the structure of dataframe1 so as to have split product code saved as a set containing all of split product codes
+    df1['split_product_codes'] = df1['product_code'].apply(lambda x: set(x.split('_')))
+    return df1
