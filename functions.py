@@ -254,6 +254,10 @@ def successful_tour_looks_like(dataframe1, dataframe2):
         Total_profit = ('Profit', 'sum')
     ).reset_index()
 
+    #keep listings that have at least 30 travellers
+    df1 = df1[df1['Total_Travellers'] > 30]
+
+
     #sort values based on average profit, descending
     df1.sort_values(by = 'Total_profit', ascending = False)
 
