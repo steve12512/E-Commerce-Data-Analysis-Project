@@ -334,7 +334,7 @@ def add_df2_profit(dataframe1, dataframe2):
 
     #first try to search for the whole  product code
     df2['Profit'] = df2['split_product_codes'].apply(lambda key: codes_to_profit(key, df1, df2))
-
+    
 
 
 
@@ -348,16 +348,29 @@ def codes_to_profit(key, df1, df2):
     if not exact_match.empty:
         # Return the profit of the first match
         return exact_match['Profit'].iloc[0]
+    else:
+        #if we havent found a match, try again, after stripping the code. before doing that, convert the set into a list
+        key = list(key)
+        key = strip_language_code(key)
+        exact_match = df1[df1['split_product_codes'].apply(lambda x: key == x)]
+        if not exact_match.empty:
+            # Return the profit of the first match
+            return exact_match['Profit'].iloc[0]       
 
-    # If no exact match found, try to find partial matches
-    for code_set in df1['split_product_codes']:
-        if key_frozenset.issubset(frozenset(code_set)):
-            return df1[df1['split_product_codes'] == code_set]['Profit'].iloc[0]
+        #if we still have not found a match, split each item in the key
+        key = str(key)
+        key = key.replace('{', '').replace('}', '')
+        keys_list = key.split(',')
 
-    # If still no match, return NaN
-    return np.nan
+        for key in keys_list:
+            exact_match = df1[df1['split_product_codes'].apply(lambda x: key == x)]
+            if not exact_match.empty:
+
+                return exact_match['Profit'].iloc[0]
 
 
+        #if we still havent found it, return nan
+        return np.nan
 
 
 
