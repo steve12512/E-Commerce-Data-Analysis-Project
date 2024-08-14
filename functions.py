@@ -19,7 +19,7 @@ def read_df1():
     
     # List of valid months
     valid_months = ["January", "February", "March", "April", "May", "June",
-                    "July", "August", "September", "October", "November", "December"]
+                    "uly", "August", "September", "October", "November", "December"]
     
     # Loop through each sheet
     for sheet_name, df in sheets_dict.items():
@@ -42,7 +42,6 @@ def read_df1():
     combined_df = combined_df.drop_duplicates()
     combined_df = parsing_df1(combined_df)    
 
-    print(combined_df.dtypes)
     return combined_df
 
 
@@ -143,7 +142,6 @@ def add_ticket_price(merged_df):
     #add a column representing the profit per tour
     merged_df['Profit'] = merged_df['retail_price'] - merged_df['Ticket Price']
 
-    print('1111')
     #due to non consistency of the data, some columns have 0 <= profit. drop these
     merged_df = merged_df[ merged_df['Profit'] > 0]
     return merged_df
@@ -212,20 +210,8 @@ def read_df2(dataframe1):
     #split dataframe2's product codes 
     dataframe2['split_product_code'] = dataframe2['Product Code'].apply(lambda x: x.split('_')[0])
 
-    
-
-
-
-
     #create a new column for the country and the language of the listing
     dataframe2 = pd.merge(dataframe2, dataframe1[['split_product_code', 'Country', 'language']], on='split_product_code', how='left')
-
-
-
-
-
-
-
     dataframe2 = dataframe2.drop_duplicates()
 
     return dataframe2
@@ -256,7 +242,6 @@ def successful_tour_looks_like(dataframe1, dataframe2):
 
     #keep listings that have at least 30 travellers
     df1 = df1[df1['Total_Travellers'] > 30]
-
 
     #sort values based on average profit, descending
     df1.sort_values(by = 'Total_profit', ascending = False)
@@ -339,7 +324,6 @@ def edit_dfs(df1, df2):
     #change the structure of dataframe1 so as to have split product code saved as a set containing all of split product codes
     df1['split_product_codes'] = df1['product_code'].apply(lambda x: set(x.split('_')))
     df2['split_product_codes'] = df2['Product Code'].apply(lambda x: set(x.split('_')))
-
     return df1, df2
 
 def add_df2_profit(dataframe1, dataframe2):
@@ -349,10 +333,29 @@ def add_df2_profit(dataframe1, dataframe2):
     df2 = dataframe2.copy()
 
     #first try to search for the whole  product code
-    df2['Profit'] = df1['product_code'] if df2['Product Code'] == df1['product_code'] else df2['split_product_codes'].apply(function_name)
+    df2['Profit'] = df2['split_product_codes'].apply(lambda key: codes_to_profit(key, df1, df2))
 
 
 
+
+def codes_to_profit(key, df1, df2):
+    # Convert key to a frozenset to handle unordered comparisons
+    key_frozenset = frozenset(key)
+
+    # Search for an exact match
+    exact_match = df1[df1['split_product_codes'].apply(lambda x: key_frozenset == frozenset(x))]
+
+    if not exact_match.empty:
+        # Return the profit of the first match
+        return exact_match['Profit'].iloc[0]
+
+    # If no exact match found, try to find partial matches
+    for code_set in df1['split_product_codes']:
+        if key_frozenset.issubset(frozenset(code_set)):
+            return df1[df1['split_product_codes'] == code_set]['Profit'].iloc[0]
+
+    # If still no match, return NaN
+    return np.nan
 
 
 
@@ -368,11 +371,4 @@ def which_tours_do_we_recommend_to_a_traveller(dataframe1, dataframe2, go_togeth
 
     #filter the listings in df2 that have had a rating higher than 4
     liked_tours = df2[df2['Experience'].isin(['Excellent (5 stars)', 'Positive (4 stars)', 'Positive \n(4 stars)' , 'Excellent (5*)', 'Positive (4*)', '5*', '4*'])]
-
-
-
-
-
-
-
     liked_tours.to_excel('unimportant/liked.xlsx', index =False)
