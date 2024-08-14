@@ -333,6 +333,10 @@ def add_df2_profit(dataframe1, dataframe2):
     df2 = dataframe2.copy()
 
     #first try to search for the whole  product code
+<<<<<<< HEAD
+    df2['Profit'] = df1['product_code'] if df2['Product Code'] == df1['product_code'] else df2['split_product_codes'].apply(function_name)
+    
+=======
     df2['Profit'] = df2['split_product_codes'].apply(lambda key: codes_to_profit(key, df1, df2))
 
 
@@ -341,6 +345,7 @@ def add_df2_profit(dataframe1, dataframe2):
 def codes_to_profit(key, df1, df2):
     # Convert key to a frozenset to handle unordered comparisons
     key_frozenset = frozenset(key)
+>>>>>>> 384f63b08c33ad2796878c1cd7b2d1c75768fd36
 
     # Search for an exact match
     exact_match = df1[df1['split_product_codes'].apply(lambda x: key_frozenset == frozenset(x))]
