@@ -323,7 +323,31 @@ def edit_dfs(df1, df2):
     #change the structure of dataframe1 so as to have split product code saved as a set containing all of split product codes
     df1['split_product_codes'] = df1['product_code'].apply(lambda x: set(x.split('_')))
     df2['split_product_codes'] = df2['Product Code'].apply(lambda x: set(x.split('_')))
+    add_days_and_hours(df1)
     return df1, df2
+
+def add_days_and_hours(dataframe1):
+    #this function parses the dates columns of dataframe1 as date columns, and adds the travel and booking hour, days columns
+    dataframe1['travel_date'] = pd.to_datetime(dataframe1['travel_date'], dayfirst=True)
+    dataframe1['booking_date'] = pd.to_datetime(dataframe1['booking_date'], dayfirst=True)
+    dataframe1['booking_day'] = dataframe1['booking_date'].dt.day_name() 
+    dataframe1['booking_hour'] = dataframe1['booking_date'].dt.hour
+    dataframe1['travel_day'] = dataframe1['travel_date'].dt.day_name()
+    dataframe1['travel_hour'] = dataframe1['travel_date'].dt.hour
+    return dataframe1
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def add_df2_profit(dataframe1, dataframe2):
     # Add a profit column to df2 by copying the dataframes
