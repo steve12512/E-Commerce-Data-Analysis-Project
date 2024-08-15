@@ -16,6 +16,8 @@ go_together = which_tours_go_together(dataframe1, dataframe2)
 
 #do a minor edit in df1 so as to have all split product codes saved as a set
 dataframe1, dataframe2 = edit_dfs(dataframe1, dataframe2)
+print(dataframe1['split_product_codes'].head(20))
+print(dataframe2['split_product_codes'].head(20))
 
 #add profit to dataframe2
 dataframe2 = add_df2_profit(dataframe1, dataframe2)
