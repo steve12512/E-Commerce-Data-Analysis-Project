@@ -334,7 +334,7 @@ def add_df2_profit(dataframe1, dataframe2):
 
     #first try to search for the whole  product code
     df2['Profit'] = df2['split_product_codes'].apply(lambda key: codes_to_profit(key, df1, df2))
-    
+    return df2
 
 
 
