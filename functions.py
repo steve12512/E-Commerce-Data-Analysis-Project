@@ -5,12 +5,13 @@ from fuzzywuzzy import process
 #this is the file that contains the functions we will be using in our script
 
 def read_files():
-    # This function reads our xlsx files and saves them as dataframe objects
+    #this function reads our xlsx files and saves them as dataframe objects
     dataframe1 = read_df1()
     dataframe2 = read_df2(dataframe1) #dataframe2 needs to have access to dataframe1 for the merging of their product codes
     return dataframe1, dataframe2
 
 def read_df1():
+    #this function reads dataframe
     sheets_dict = pd.read_excel('unimportant/Booking Stats.xlsx', sheet_name=None)
     codes_prices_df = sheets_dict['Codes & Prices']
 
@@ -41,7 +42,6 @@ def read_df1():
     #drop duplicated and then change variable types to preserve memory
     combined_df = combined_df.drop_duplicates()
     combined_df = parsing_df1(combined_df)    
-
     return combined_df
 
 
@@ -94,7 +94,6 @@ def merge_with_prices(df):
 
     #add ticket price
     merged_df = add_ticket_price(merged_df)
-    
     return merged_df
 
 
@@ -126,7 +125,6 @@ def edit_nulls(merged_df, unpivoted_df):
 
 def match_nulls(count, merged_df, unpivoted_df):
     #this function is called 2 times. the 1st time, it tries to find the price for listings based on their product code. the second time, it does that again with a different approach.
-
     null_price_rows = merged_df['Ticket Price'].isnull()
     merged_df.loc[null_price_rows, 'Ticket Price'] = merged_df.loc[null_price_rows].apply(
     lambda row: search_in_string(row, unpivoted_df, count), axis=1)
@@ -150,10 +148,9 @@ def add_ticket_price(merged_df):
 def strip_language_code(code):
     #modify the dataset so as to remove '_', and Language shortcuts, in order to properly map product codes to corresponding ticket prices from different excel sheets saved as different dataframes.
     languages = ['GR', 'EN', 'FR', 'DE', 'IT', 'ES']
-
     if '_'  in code:
         return code.split('_')[0]
-
+    
     if code[-2:] in languages:
         return code[:-2]
     return code
@@ -191,7 +188,6 @@ def parsing_df1(combined_df):
 
 def read_df2(dataframe1):
     #reads the second dataframe, df2, which contains the reviews
-
     sheets = pd.read_excel('unimportant/reviews data.xlsx', sheet_name=None)
     dataframes = []
 
@@ -254,7 +250,6 @@ def successful_tour_looks_like(dataframe1, dataframe2):
 
 def which_tours_go_together(dataframe1, dataframe2):
     #which tours go together? first make a copy of our dataframes
-
     df1 = dataframe1.copy()
     df2 = dataframe2.copy()
 
@@ -328,7 +323,7 @@ def edit_dfs(df1, df2):
 
 def add_days_and_hours(dataframe1):
     #this function parses the dates columns of dataframe1 as date columns, and adds the travel and booking hour, days columns
-    dataframe1['travel_date'] = pd.to_datetime(dataframe1['travel_date'], dayfirst=True)
+    dataframe1['travel_date'] = pd.to_datetime(dataframe1['travel_date'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
     dataframe1['booking_date'] = pd.to_datetime(dataframe1['booking_date'], dayfirst=True)
     dataframe1['booking_day'] = dataframe1['booking_date'].dt.day_name() 
     dataframe1['booking_hour'] = dataframe1['booking_date'].dt.hour
@@ -350,14 +345,14 @@ def add_days_and_hours(dataframe1):
 
 
 def add_df2_profit(dataframe1, dataframe2):
-    # Add a profit column to df2 by copying the dataframes
+    #add a profit column to df2.first copy our dataframes
     df1 = dataframe1.copy()
     df2 = dataframe2.copy()
 
-    # Strip extra whitespace in df2
+    #strip extra whitespace in df2
     df2['split_product_codes'] = df2['split_product_codes'].apply(lambda x: {code.strip() for code in x})
 
-    # Search for the whole product code and add the profit column
+    #search for the whole product code and add the profit column
     df2['Profit'] = df2['split_product_codes'].apply(lambda key: codes_to_profit(key, df1))
     return df2
 
