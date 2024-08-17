@@ -12,10 +12,11 @@ def read_files():
     return dataframe1, dataframe2
 
 def read_df1():
+    #this function reads the first dataframe
     sheets_dict = pd.read_excel('unimportant/Booking Stats.xlsx', sheet_name=None)
     codes_prices_df = sheets_dict['Codes & Prices']
 
-    # Initialize an empty list to store DataFrames
+    #initialize an empty list to store DataFrames
     df_list = []
     
     # List of valid months
@@ -42,7 +43,6 @@ def read_df1():
     #drop duplicated and then change variable types to preserve memory
     combined_df = combined_df.drop_duplicates()
     combined_df = parsing_df1(combined_df)    
-
     return combined_df
 
 
@@ -58,8 +58,6 @@ def merge_with_prices(df):
 }
     #and the reverse
     reverse_month_mapping = {v: k for k, v in month_mapping.items()}
-
-
 
     #unpivot the dataframe to create more discrete listings depending on the month and the country of the product
     unpivoted_df = pd.melt(price_df, id_vars=['Product Code', 'Unnamed: 1', 'Country'], 
@@ -95,7 +93,6 @@ def merge_with_prices(df):
 
     #add ticket price
     merged_df = add_ticket_price(merged_df)
-    
     return merged_df
 
 
@@ -214,7 +211,6 @@ def read_df2(dataframe1):
     #create a new column for the country and the language of the listing
     dataframe2 = pd.merge(dataframe2, dataframe1[['split_product_code', 'Country', 'language']], on='split_product_code', how='left')
     dataframe2 = dataframe2.drop_duplicates()
-
     return dataframe2
 
 
@@ -345,52 +341,46 @@ def add_days_and_hours(dataframe1):
     return dataframe1
 
 
-
-
-
-
 def add_df2_profit(dataframe1, dataframe2):
-    #add a profit column to df2. copy our dataframes
+    #add a profit column to df2.first copy our dataframes
     df1 = dataframe1.copy()
     df2 = dataframe2.copy()
-    #first try to search for the whole  product code
-    df2['Profit'] = df2['split_product_codes'].apply(lambda key: codes_to_profit(key, df1, df2))
+
+    #strip extra whitespace in df2
+    df2['split_product_codes'] = df2['split_product_codes'].apply(lambda x: {code.strip() for code in x})
+    #search for the whole product code and add the profit column
+    df2['Profit'] = df2['split_product_codes'].apply(lambda key: codes_to_profit(key, df1))
     return df2
 
-
-
-def codes_to_profit(key, df1, df2):
-    # Convert key to a frozenset to handle unordered comparisons
+def codes_to_profit(key, df1):
+    #convert key to a frozenset for comparison
     key_frozenset = frozenset(key)
-
-    # Search for an exact match
+    
+    #search for an exact match in df1
     exact_match = df1[df1['split_product_codes'].apply(lambda x: key_frozenset == frozenset(x))]
 
     if not exact_match.empty:
-        # Return the profit of the first match
         return exact_match['Profit'].iloc[0]
-    else:
-        #if we havent found a match, try again, after stripping the code. before doing that, convert the set into a list
-        key = list(key)
-        key = strip_language_code(key)
-        exact_match = df1[df1['split_product_codes'].apply(lambda x: key == x)]
-        if not exact_match.empty:
-            # Return the profit of the first match
-            return exact_match['Profit'].iloc[0]       
 
-        #if we still have not found a match, split each item in the key
-        key = str(key)
-        key = key.replace('{', '').replace('}', '')
-        keys_list = key.split(',')
+    #if no exact match, try to strip language codes
+    key = {strip_language_code(code) for code in key}
+    key_frozenset = frozenset(key)
+    exact_match = df1[df1['split_product_codes'].apply(lambda x: key_frozenset == frozenset(x))]
 
-        for key in keys_list:
-            exact_match = df1[df1['split_product_codes'].apply(lambda x: key == x)]
-            if not exact_match.empty:
-                return exact_match['Profit'].iloc[0]
-        #if we still havent found it, return nan
-        return np.nan
+    if not exact_match.empty:
+        return exact_match['Profit'].iloc[0]
 
-
+    #if no exact match is found, compare each individual key. to do that save their sum in a variable
+    matchings = 0
+    for single_code in key:
+        partial_match = df1[df1['split_product_codes'].apply(lambda x: single_code in x)]
+        if not partial_match.empty:
+            matchings += partial_match['Profit'].iloc[0]
+    if matchings > 0 :
+        #if we have had matchings, return their sum
+        return matchings
+    #if no match found, return NaN
+    return np.nan
 
 
 def which_tours_do_we_recommend_to_a_traveller(dataframe1, dataframe2, go_together):
