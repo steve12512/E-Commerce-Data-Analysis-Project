@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from fuzzywuzzy import process
 from collections import Counter
+from visualization import *
 #this is the file that contains the functions we will be using in our script
 
 def read_files():
@@ -252,7 +253,7 @@ def successful_tour_looks_like(dataframe1, dataframe2):
 
     # Save the result to an Excel file
     df1.to_excel('questions/successful_tour_looks_like.xlsx', index=False)
-    return None
+    return df1
 
 
 
