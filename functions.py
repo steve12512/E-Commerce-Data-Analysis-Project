@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from fuzzywuzzy import process
-
+from collections import Counter
 #this is the file that contains the functions we will be using in our script
 
 def read_files():
@@ -217,61 +217,68 @@ def read_df2(dataframe1):
     return dataframe2
 
 
+
 def successful_tour_looks_like(dataframe1, dataframe2):
     #how does a sucessful tour look like? filter the listings in df1 that have a profit higher than the average. then groupby country and month, find insights about the listings with the most important being the sum of profit, and then sort them in descending order
-    # to begin with, keep a copy of dataframe1
+    # to begin with, keep a copy of dataframe1    df1 = dataframe1.copy()
     df1 = dataframe1.copy()
     df2 = dataframe2.copy()
 
-    #calculate the profit mean for the tours in dataframe1
+    # Calculate the profit mean for the tours in dataframe1
     mean = df1['Profit'].mean()
-    
-    #filter the listings in dataframe1 that have a profit higher than the average
+
+    # Filter the listings in dataframe1 that have a profit higher than the average
     df1 = df1[df1['Profit'] > mean]
 
-    #calculate the number of products per listing
+    # Calculate the number of products per listing
     df1['num_products'] = df1['product_code'].apply(lambda x: len(x.split('_')))
 
-    #groupby country and month, and find the average number of travellers, the language of the product
+    # Group by country and month, find insights, and calculate the top 3 most common travel days and their counts
     df1 = df1.groupby(['Country', 'month']).agg(
         average_travellers=('num_of_travellers', 'mean'), 
-        Total_Travellers=('num_of_travellers', 'size'),   
+        Total_Travellers=('num_of_travellers', 'size'),
         Average_number_of_products=('num_products', 'mean'),
-        Total_profit = ('Profit', 'sum')
+        Total_profit=('Profit', 'sum'),
+        Top_3_travel_days=('travel_day', lambda x: Counter(x).most_common(3)), 
+        Average_Money_Spent = ('retail_price', 'mean'),
+        most_common_languages=('language', lambda x: x.mode().tolist()[:3])  
     ).reset_index()
 
-    #keep listings that have at least 30 travellers
+    # Keep listings that have at least 30 travellers
     df1 = df1[df1['Total_Travellers'] > 30]
 
-    #sort values based on average profit, descending
-    df1.sort_values(by = 'Total_profit', ascending = False)
+    # Sort values based on total profit, descending
+    df1 = df1.sort_values(by='Total_profit', ascending=False)
 
-    #keep the 3 most profitable listings per groupby element (we have to fit it in a presentation!!!) NOT NECESSARY STEP THOUGH
-    #df1 = df1.groupby(['Country', 'month']).head(3).reset_index(drop=True)s
-
-    df1.to_excel('questions/successful_tour_looks_like.xlsx', index = False)
-
+    # Save the result to an Excel file
+    df1.to_excel('questions/successful_tour_looks_like.xlsx', index=False)
     return None
+
+
+
 
 def which_tours_go_together(dataframe1, dataframe2):
     #which tours go together? first make a copy of our dataframes
-
     df1 = dataframe1.copy()
     df2 = dataframe2.copy()
 
     #split product codes on _, create a new column for each combination and count the number of its occurances
     df1['product_combinations'] = df1['product_code'].apply(lambda x: tuple(sorted(x.split('_'))))
-    grouped_df = df1['product_combinations'].value_counts().reset_index(name='Occurrences')
-    grouped_df.columns = ['Product_Combination', 'Occurrences']
+    
+    
+    grouped_df = df1.groupby('product_combinations').agg(
+    Occurrences=('product_combinations', 'size'),
+    Average_Profit=('Profit', 'mean')
+).reset_index()
 
     #filter for combinations with at least 2 products
-    grouped_df = grouped_df[grouped_df['Product_Combination'].apply(lambda x: len(x) > 1)]
+    grouped_df = grouped_df[grouped_df['product_combinations'].apply(lambda x: len(x) > 1)]
 
     #store a dictionary to map product codes to their names
     code_to_tour = dict(zip(df2['split_product_code'], df2['Name of Product']))
 
     #for each product code in product code combination, map it to its corresponding tour name, and after having done that for all codes, concatenate the string
-    grouped_df['tour_names'] = grouped_df['Product_Combination'].apply(lambda x: get_tour_names(x, code_to_tour, df2))    
+    grouped_df['tour_names'] = grouped_df['product_combinations'].apply(lambda x: get_tour_names(x, code_to_tour, df2))    
 
     #sort the DataFrame by the number of occurrences
     grouped_df = grouped_df.sort_values(by='Occurrences', ascending=False)

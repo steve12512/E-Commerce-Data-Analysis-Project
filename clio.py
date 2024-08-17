@@ -8,16 +8,23 @@ from functions import read_files, save_to_excel, successful_tour_looks_like, whi
 #From here and on, our script starts executing
 dataframe1, dataframe2 = read_files()
 
-#how does a successful tour look like?
-successful_tour_looks_like(dataframe1, dataframe2)
-
-#which tours go together?
-go_together = which_tours_go_together(dataframe1, dataframe2)
-
 
 #do a minor edit in df1 so as to have all split product codes saved as a set
 dataframe1, dataframe2 = edit_dfs(dataframe1, dataframe2)
 
+
+
+#how does a successful tour look like?
+successful_tour_looks_like(dataframe1, dataframe2)
+
+
+
+
+
+#which tours go together?
+go_together = which_tours_go_together(dataframe1, dataframe2)
+
+#which tours go together?
 #add profit to dataframe2
 dataframe2 = add_df2_profit(dataframe1, dataframe2)
 
