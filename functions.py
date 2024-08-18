@@ -186,11 +186,11 @@ def parsing_df1(combined_df):
 
 
 
-def add_number_of_stories(df1):
+def add_number_of_stories(df1, df2):
     #this function adds a new column to dataframe1, called number of stories, depending on how many stories are within each listing
     df1['number_of_stories'] = df1['product_code'].apply(lambda x: len(list(x.split('_'))))
-    
-    return df1
+    #df2['number_of_stories'] = df2['Name of Product'].apply(lambda x: len(list(x.split('_'))))
+    return df1, df2
 
 
 def read_df2(dataframe1):
@@ -268,7 +268,7 @@ def edit_dfs(df1, df2):
     df1['split_product_codes'] = df1['product_code'].apply(lambda x: set(x.split('_')))
     df2['split_product_codes'] = df2['Product Code'].apply(lambda x: set(x.split('_')))
     add_days_and_hours(df1)
-    add_number_of_stories(df1)
+    df1, df2 = add_number_of_stories(df1, df2)
     df1.rename(columns = {'Unnamed: 1' : 'stories'} , inplace = True)
     return df1, df2
 

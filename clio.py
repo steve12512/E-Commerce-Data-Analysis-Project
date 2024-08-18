@@ -3,7 +3,7 @@ import pandas as pd
 from functions import *
 from questions import *
 
-#"""
+
 #this is our main function file
 #From here and on, our script starts executing
 dataframe1, dataframe2 = read_files()
@@ -34,12 +34,10 @@ which_tours_do_we_recommend_to_a_traveller(dataframe1, dataframe2, go_together)
 plot_travellers_vs_spending(successful)
 
 
-optimum_number_of_stories()
+optimum1 = optimum_number_of_stories_profit(dataframe1)
 
 
 
 
 
 save_to_excel(dataframe1, dataframe2)
-
-#"""

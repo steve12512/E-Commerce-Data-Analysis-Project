@@ -123,7 +123,20 @@ def which_tours_do_we_recommend_to_a_traveller(dataframe1, dataframe2, go_togeth
 
 
     
-def optimum_number_of_stories():
-   # 
+def optimum_number_of_stories_profit(df):
+   #use dataframe1. groupby number of stories, and mean profit to find the corellation between em
+   df1 = df.copy()
+   df1 = df1.groupby('number_of_stories')['Profit'].mean().reset_index()
+   df1.to_excel('questions/optimum_number_of_stories.xlsx', index = False)
+   visualize_optimum_number_of_stories_profit(df1)
+   return df1
+
+
+def optimum_number_of_stories_liked(df1, df2):
+    #use dataframe2 to filter tours with at least 4 or 5 stars. then visualize the correlation between number of stories and likenedness
+    #copy our dataframes
     
-    pass
+    df1_copy = df1.copy()
+    df2_copy = df2.copy()
+    
+    
