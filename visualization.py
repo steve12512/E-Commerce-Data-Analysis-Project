@@ -58,3 +58,16 @@ def visualize_optimum_number_of_stories_profit(df1):
     for index, value in enumerate(df1['Average Profit']):
         plt.text(index, value + 200, f'{int(value)}', ha='center', va='bottom')
     plt.show()
+
+    
+def visualize_optimum_number_of_stories_likedness(df):
+    #visualize the corellation between likedness and mean number of stories per likedness group
+    #Plotting
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='Mean_Number_of_Stories', y='Standardized_Experience', data=df, palette='rocket')
+    plt.title('Mean Number of Stories by Experience Rating')
+    plt.xlabel('Mean_Number_of_Stories')
+    plt.ylabel('Experience Rating')
+    plt.show()
+
+    

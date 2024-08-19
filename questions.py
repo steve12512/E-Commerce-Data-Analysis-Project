@@ -129,14 +129,19 @@ def optimum_number_of_stories_profit(df):
    df1 = df1.groupby('number_of_stories')['Profit'].mean().reset_index()
    df1.to_excel('questions/optimum_number_of_stories.xlsx', index = False)
    visualize_optimum_number_of_stories_profit(df1)
+   df1.to_excel('questions/optimum_by_profit.xlsx', index = False)
    return df1
 
 
-def optimum_number_of_stories_liked(df1, df2):
-    #use dataframe2 to filter tours with at least 4 or 5 stars. then visualize the correlation between number of stories and likenedness
+def optimum_number_of_stories_liked(df2):
+    #use dataframe2 to visualize the correlation between number of stories and likenedness
     #copy our dataframes
-    
-    df1_copy = df1.copy()
     df2_copy = df2.copy()
-    
-    
+    df2_copy = df2_copy.groupby('Standardized_Experience').agg(
+        Number_of_listings = ('Standardized_Experience', 'size'),
+        Mean_Number_of_Stories = ('number_of_stories', 'mean')).reset_index()
+    #visualize and save the result
+    visualize_optimum_number_of_stories_likedness(df2_copy)
+    #save the result
+    df2_copy.to_excel('questions/optimum_number_of_stories_likedness.xlsx', index = False)
+    return df2_copy

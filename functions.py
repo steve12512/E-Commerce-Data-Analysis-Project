@@ -271,11 +271,13 @@ def edit_dfs(df1, df2):
     #rename a column too
     df1['split_product_codes'] = df1['product_code'].apply(lambda x: set(x.split('_')))
     df2['split_product_codes'] = df2['Product Code'].apply(lambda x: set(x.split('_')))
-    add_days_and_hours(df1)
+    add_days_and_hours(df1) #add days and hours to df1
+    df2 = map_likedness(df2) #map universal experience values to shared values, due to incosistency of formats
     df1, df2 = add_number_of_stories(df1, df2)
     df1.rename(columns = {'Unnamed: 1' : 'stories'} , inplace = True)
     #drop unnecessary dataframe2 columns
-    df2.drop(['Unnamed: 9', 'Unnamed: 8', 'Unnamed: 7', 'Reviews', 'Unnamed: 0',], inplace = True)
+    print(df2.columns)
+    df2.drop(['Unnamed: 9', 'Unnamed: 8', 'Unnamed: 7', 'Reviews', 'Unnamed: 0'], axis = 1,inplace = True)
     return df1, df2
 
 def add_days_and_hours(dataframe1):
@@ -287,6 +289,27 @@ def add_days_and_hours(dataframe1):
     dataframe1['travel_day'] = dataframe1['travel_date'].dt.day_name()
     return dataframe1
 
+def map_likedness(df2):
+    #some values in the experience column of df2 have varying formats, for example, 'excellent 5*' and just '5*' in others.
+    #so let us add a common column for all different formats.
+    experience_mapping = { #map different formats to common numbers
+        'Excellent (5 stars)': '5',
+        'Positive (4 stars)': '4',
+        'Positive \n(4 stars)': '4',
+        'Excellent (5*)': '5',
+        'Positive (4*)': '4',
+        '5*': '5',
+        '4*': '4',
+        'Neutral (3 stars)' : '3',
+        'Bad (1 star)' : '1',
+        'Negative (2 stars)' : '2',
+        'Neutral (3*)' : '3',
+        'Bad (1*)' : '1',
+        'Negative (2*)' : '2',
+    }
+    #apply the mapping
+    df2['Standardized_Experience'] = df2['Experience'].map(experience_mapping)
+    return df2
 
 def add_df2_profit(dataframe1, dataframe2):
     #add a profit column to df2.first copy our dataframes

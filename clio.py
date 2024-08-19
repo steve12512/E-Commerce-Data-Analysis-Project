@@ -35,7 +35,7 @@ plot_travellers_vs_spending(successful)
 
 
 optimum1 = optimum_number_of_stories_profit(dataframe1)
-
+optimum2 = optimum_number_of_stories_liked(dataframe2)
 
 
 
