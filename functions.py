@@ -187,9 +187,13 @@ def parsing_df1(combined_df):
 
 
 def add_number_of_stories(df1, df2):
-    #this function adds a new column to dataframe1, called number of stories, depending on how many stories are within each listing
+    #this function adds a new column to dataframes 1 and 2, called number of stories, depending on how many stories are within each listing
     df1['number_of_stories'] = df1['product_code'].apply(lambda x: len(list(x.split('_'))))
-    #df2['number_of_stories'] = df2['Name of Product'].apply(lambda x: len(list(x.split('_'))))
+    
+    #select the rows for which product code is not null and apply the same function to them
+    rows = df2['Product Code'].notna() & (df2['Product Code'] != '')
+    df2['number_of_stories'] = 1
+    df2.loc[rows, 'number_of_stories'] = df2.loc[rows, 'Product Code'].apply(lambda x: len(x.split('_')))
     return df1, df2
 
 
@@ -270,6 +274,8 @@ def edit_dfs(df1, df2):
     add_days_and_hours(df1)
     df1, df2 = add_number_of_stories(df1, df2)
     df1.rename(columns = {'Unnamed: 1' : 'stories'} , inplace = True)
+    #drop unnecessary dataframe2 columns
+    df2.drop(['Unnamed: 9', 'Unnamed: 8', 'Unnamed: 7', 'Reviews', 'Unnamed: 0',], inplace = True)
     return df1, df2
 
 def add_days_and_hours(dataframe1):
