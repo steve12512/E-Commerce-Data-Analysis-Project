@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from fuzzywuzzy import process
 from collections import Counter
+from visualization import *
 #this is the file that contains the functions we will be using in our script, aside from the ones that directly answer our questions
 
 def read_files():
@@ -189,11 +190,7 @@ def parsing_df1(combined_df):
 def add_number_of_stories(df1, df2):
     #this function adds a new column to dataframes 1 and 2, called number of stories, depending on how many stories are within each listing
     df1['number_of_stories'] = df1['product_code'].apply(lambda x: len(list(x.split('_'))))
-    
-    #select the rows for which product code is not null and apply the same function to them
-    rows = df2['Product Code'].notna() & (df2['Product Code'] != '')
-    df2['number_of_stories'] = 1
-    df2.loc[rows, 'number_of_stories'] = df2.loc[rows, 'Product Code'].apply(lambda x: len(x.split('_')))
+    df2['number_of_stories'] = df2['Product Code'].apply(lambda x: len(list(x.split('_'))))
     return df1, df2
 
 
@@ -261,8 +258,31 @@ def get_tour_names(product_codes, code_to_tour, df2):
     return ', '.join(tour_names)
 
 def save_to_excel(dataframe1, dataframe2):
-    dataframe1.to_excel('dataframe1.xlsx', index=False)
-    dataframe2.to_excel('dataframe2.xlsx', index=False)
+    save_df_to_excel_with_standard_width(dataframe1, 'dataframe1.xlsx', column_width=18)
+    save_df_to_excel_with_standard_width(dataframe2, 'dataframe2.xlsx',column_width=18)
+
+
+def save_df_to_excel_with_standard_width(df, file_name, column_width=20):
+    # Save the DataFrame to Excel using the openpyxl engine
+    df.to_excel(file_name, index=False, engine='openpyxl')
+    
+    # Open the file with openpyxl to modify the column widths
+    from openpyxl import load_workbook
+    
+    workbook = load_workbook(file_name)
+    worksheet = workbook.active
+    
+    # Set the width for each column
+    for col in worksheet.columns:
+        max_length = max(len(str(cell.value)) for cell in col)
+        adjusted_width = max(max_length, column_width)
+        worksheet.column_dimensions[col[0].column_letter].width = adjusted_width
+    
+    # Save the modified workbook
+    workbook.save(file_name)
+
+
+
 
 
 def edit_dfs(df1, df2):
@@ -339,7 +359,7 @@ def codes_to_profit(key, df1):
 
     if not exact_match.empty:
         return exact_match['Profit'].iloc[0]
-
+    ''' keep as comments as to boost speed.
     #if no exact match is found, compare each individual key. to do that save their sum in a variable
     matchings = 0
     for single_code in key:
@@ -350,6 +370,25 @@ def codes_to_profit(key, df1):
         #if we have had matchings, return their sum
         return matchings
     #if no match found, return NaN
+    '''
     return np.nan
 
+def travellers_vs_spending(df):
+    #
+    #group by country and month, find insights, and calculate the top 3 most common travel days and their counts
+    df1 = df.groupby(['Country', 'month']).agg(
+        average_travellers=('num_of_travellers', 'mean'), 
+        Total_Travellers=('num_of_travellers', 'size'),
+        Average_number_of_stories =('number_of_stories', 'mean'),
+        Total_profit=('Profit', 'sum'),
+        Top_3_travel_days=('travel_day', lambda x: Counter(x).most_common(3)), 
+        Average_Money_Spent = ('retail_price', 'mean'),
+        most_common_languages=('language', lambda x: x.mode().tolist()[:3])  
+    ).reset_index()
 
+    # Keep listings that have at least 30 travellers
+    df1 = df1[df1['Total_Travellers'] > 30]
+
+    # Sort values based on total profit, descending
+    df1 = df1.sort_values(by='Total_profit', ascending=False)
+    plot_travellers_vs_spending(df1)

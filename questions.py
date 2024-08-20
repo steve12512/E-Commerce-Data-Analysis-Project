@@ -139,9 +139,8 @@ def optimum_number_of_stories_liked(df2):
     df2_copy = df2.copy()
     df2_copy = df2_copy.groupby('Standardized_Experience').agg(
         Number_of_listings = ('Standardized_Experience', 'size'),
-        Mean_Number_of_Stories = ('number_of_stories', 'mean')).reset_index()
+        Most_Common_Number_of_Stories = ('number_of_stories', lambda x : x.mode().iloc[0])).reset_index()
     #visualize and save the result
     visualize_optimum_number_of_stories_likedness(df2_copy)
     #save the result
     df2_copy.to_excel('questions/optimum_number_of_stories_likedness.xlsx', index = False)
-    return df2_copy
