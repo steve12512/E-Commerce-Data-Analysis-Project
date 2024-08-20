@@ -307,6 +307,8 @@ def add_days_and_hours(dataframe1):
     dataframe1['booking_day'] = dataframe1['booking_date'].dt.day_name() 
     dataframe1['booking_hour'] = dataframe1['booking_date'].dt.hour
     dataframe1['travel_day'] = dataframe1['travel_date'].dt.day_name()
+    dataframe1['travel_day_number'] = dataframe1['travel_day'].dt.name()
+    dataframe1['travel_month'] = dataframe1['travel_date'].dt.month()
     return dataframe1
 
 def map_likedness(df2):
