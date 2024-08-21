@@ -27,12 +27,11 @@ def successful_tour_looks_like(dataframe1, dataframe2):
         Top_3_travel_days=('travel_day', lambda x: Counter(x).most_common(3)), 
         Average_Money_Spent = ('retail_price', 'mean'),
         most_common_languages=('language', lambda x: x.mode().tolist()[:3]),
-        most_common_number_of_stories = ('number_of_stories', lambda x: x.mode().tolist()[0])
+        most_common_number_of_stories = ('number_of_stories', lambda x: x.mode().tolist()[0]),
     ).reset_index()
 
     #keep listings that have at least 30 travellers
     df1 = df1[df1['Total_Travellers'] > 30]
-    df1['average_money_spent_by_traveller'] = df1['retail_price'] / df1['num_of_travellers'] #find the average spending per person
     # Sort values based on total profit, descending
     df1 = df1.sort_values(by='Total_profit', ascending=False)
 

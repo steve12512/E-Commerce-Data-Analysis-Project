@@ -295,6 +295,8 @@ def edit_dfs(df1, df2):
     df2 = map_likedness(df2) #map universal experience values to shared values, due to incosistency of formats
     df1, df2 = add_number_of_stories(df1, df2)
     df1.rename(columns = {'Unnamed: 1' : 'stories'} , inplace = True)
+    #add average spending per traveller to df 1
+    df1['average_spending_per_traveller'] = df1['retail_price'] / df1['num_of_travellers']
     #drop unnecessary dataframe2 columns
     print(df2.columns)
     df2.drop(['Unnamed: 9', 'Unnamed: 8', 'Unnamed: 7', 'Reviews', 'Unnamed: 0'], axis = 1,inplace = True)
@@ -307,8 +309,8 @@ def add_days_and_hours(dataframe1):
     dataframe1['booking_day'] = dataframe1['booking_date'].dt.day_name() 
     dataframe1['booking_hour'] = dataframe1['booking_date'].dt.hour
     dataframe1['travel_day'] = dataframe1['travel_date'].dt.day_name()
-    dataframe1['travel_day_number'] = dataframe1['travel_day'].dt.name()
-    dataframe1['travel_month'] = dataframe1['travel_date'].dt.month()
+    dataframe1['travel_day_number'] = dataframe1['travel_date'].dt.name
+    dataframe1['travel_month'] = dataframe1['travel_date'].dt.month
     return dataframe1
 
 def map_likedness(df2):
