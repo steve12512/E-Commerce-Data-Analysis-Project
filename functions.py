@@ -147,12 +147,10 @@ def add_ticket_price(merged_df):
 
 def strip_language_code(code):
     #modify the dataset so as to remove '_', and Language shortcuts, in order to properly map product codes to corresponding ticket prices from different excel sheets saved as different dataframes.
-    
     languages = ['GR', 'EN', 'FR', 'DE', 'IT', 'ES']
 
     if '_'  in code:
         return code.split('_')[0]
-
 
     if code[-2:] in languages:
         return code[:-2]
@@ -286,9 +284,11 @@ def save_df_to_excel_with_standard_width(df, file_name, column_width=20):
 
 
 def edit_dfs(df1, df2):
+    #general editing. first drop duplicates on our dataframes
     #change the structure of dataframe1 so as to have split product code saved as a set containing all of split product codes
     #add booking and travel days and hours
     #rename a column too
+
     df1['split_product_codes'] = df1['product_code'].apply(lambda x: set(x.split('_')))
     df2['split_product_codes'] = df2['Product Code'].apply(lambda x: set(x.split('_')))
     add_days_and_hours(df1) #add days and hours to df1
@@ -300,6 +300,7 @@ def edit_dfs(df1, df2):
     #drop unnecessary dataframe2 columns
     print(df2.columns)
     df2.drop(['Unnamed: 9', 'Unnamed: 8', 'Unnamed: 7', 'Reviews', 'Unnamed: 0'], axis = 1,inplace = True)
+    df1 = df1.drop_duplicates(subset = 'id', keep = 'first')
     return df1, df2
 
 def add_days_and_hours(dataframe1):
@@ -363,7 +364,7 @@ def codes_to_profit(key, df1):
 
     if not exact_match.empty:
         return exact_match['Profit'].iloc[0]
-    ''' keep as comments as to boost speed.
+    # keep as comments as to boost speed.
     #if no exact match is found, compare each individual key. to do that save their sum in a variable
     matchings = 0
     for single_code in key:
@@ -374,7 +375,6 @@ def codes_to_profit(key, df1):
         #if we have had matchings, return their sum
         return matchings
     #if no match found, return NaN
-    '''
     return np.nan
 
 def travellers_vs_spending(df):
