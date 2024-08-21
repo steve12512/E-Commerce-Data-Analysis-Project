@@ -45,18 +45,19 @@ def visualize_optimum_number_of_stories_profit(df1):
     df1.columns = ['Number of Stories', 'Average Profit']
 
     # Create a seaborn plot
-    plt.figure(figsize=(10, 9))
+    plt.figure(figsize=(10, 6))
     #Create the bar plot with a different palette and thinner bars
     sns.barplot(x='Number of Stories', y='Average Profit', data=df1, palette='coolwarm', width=0.5)
 
     # Adding titles and labels
-    plt.title('Average Profit by Number of Stories', fontsize=16)
+    plt.title('Average Profit by Number of Stories', fontsize=16, pad = 20)
     plt.xlabel('Number of Stories', fontsize=14)
     plt.ylabel('Average Profit', fontsize=14)
 
     # Adding the values on top of each bar
     for index, value in enumerate(df1['Average Profit']):
         plt.text(index, value + 200, f'{int(value)}', ha='center', va='bottom')
+    plt.tight_layout()
     plt.show()
 
     
@@ -66,5 +67,5 @@ def visualize_optimum_number_of_stories_likedness(df):
     sns.barplot(x='Standardized_Experience', y='Most_Common_Number_of_Stories', data=df, palette='rocket')
     plt.title('Mean Number of Stories by Experience Rating')
     plt.xlabel('Experience Rating')
-    plt.ylabel('Mean Number of Stories')
+    plt.ylabel('Most Common Number of Stories')
     plt.show()

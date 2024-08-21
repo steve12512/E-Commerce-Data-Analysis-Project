@@ -25,9 +25,10 @@ def successful_tour_looks_like(dataframe1, dataframe2):
         Average_number_of_products=('num_products', 'mean'),
         Total_profit=('Profit', 'sum'),
         Top_3_travel_days=('travel_day', lambda x: Counter(x).most_common(3)), 
-        Average_Money_Spent = ('retail_price', 'mean'),
+        Average_Money_Spent_per_group = ('retail_price', 'mean'),
+        average_money_spent_per_traveller = ('money_spent_per_traveller', 'mean'),
         most_common_languages=('language', lambda x: x.mode().tolist()[:3]),
-        most_common_number_of_stories = ('number_of_stories', lambda x: x.mode().tolist()[0]),
+        most_common_number_of_stories = ('number_of_stories', lambda x: x.mode().tolist()[0])     
     ).reset_index()
 
     #keep listings that have at least 30 travellers
@@ -37,6 +38,7 @@ def successful_tour_looks_like(dataframe1, dataframe2):
 
     # Save the result to an Excel file
     df1.to_excel('questions/successful_tour_looks_like.xlsx', index=False)
+    save_df_to_excel_with_standard_width(df1,'successful_tours_looks_like.xlsx', column_width= 20)
     return df1
 
 
@@ -69,6 +71,7 @@ def which_tours_go_together(dataframe1, dataframe2):
     grouped_df = grouped_df.sort_values(by='Occurrences', ascending=False)
 
     #save  to an Excel file
+    save_df_to_excel_with_standard_width(grouped_df, 'questions/tours_go_together.xlsx', column_width=20)
     grouped_df.to_excel('questions/tours_go_together.xlsx', index=False)
     return grouped_df
 
@@ -76,6 +79,8 @@ def which_tours_go_together(dataframe1, dataframe2):
 
 def which_tours_do_we_recommend_to_a_traveller(dataframe1, dataframe2, go_together):
     #which tours do we recommend to a traveller? first make a copy of our dataframes to operate upon
+    #result 1 filters dataframe 2 into the most liked tours and finds the occurence of these tours per month, country as well as their profit sum
+    #result 2 uses dataframe 1, and groups by country, month, product and finds the sum of profit
     df1= dataframe1.copy()
     df2 = dataframe2.copy()
     together = go_together.copy()
@@ -116,11 +121,15 @@ def which_tours_do_we_recommend_to_a_traveller(dataframe1, dataframe2, go_togeth
     
     
     # Keep only the top 5 listings per country based on 'total_profit'
-    top_5_per_country = result2.groupby('Country').head(5)
-    
+    #top_5_per_country = result2.groupby('Country').head(5)
+    top_5_per_country = (
+    result2.drop_duplicates(subset=['Country', 'product_title'])
+           .groupby('Country')
+           .head(15)
+) 
     result1.to_excel('questions/recommended1.xlsx', index =False)
     result2.to_excel('questions/recommended2.xlsx', index =False)
-
+    save_df_to_excel_with_standard_width(top_5_per_country, 'questions/rec3.xlsx', column_width=18)
 
     
 def optimum_number_of_stories_profit(df):
@@ -130,6 +139,7 @@ def optimum_number_of_stories_profit(df):
    df1.to_excel('questions/optimum_number_of_stories.xlsx', index = False)
    visualize_optimum_number_of_stories_profit(df1)
    df1.to_excel('questions/optimum_by_profit.xlsx', index = False)
+   save_df_to_excel_with_standard_width(df1,'questions/optimum_by_profit.xlsx.xlsx', column_width= 20)
    return df1
 
 
@@ -139,8 +149,10 @@ def optimum_number_of_stories_liked(df2):
     df2_copy = df2.copy()
     df2_copy = df2_copy.groupby('Standardized_Experience').agg(
         Number_of_listings = ('Standardized_Experience', 'size'),
-        Most_Common_Number_of_Stories = ('number_of_stories', lambda x : x.mode().iloc[0])).reset_index()
+        Most_Common_Number_of_Stories = ('number_of_stories', lambda x : x.mode())).reset_index()
     #visualize and save the result
     visualize_optimum_number_of_stories_likedness(df2_copy)
     #save the result
     df2_copy.to_excel('questions/optimum_number_of_stories_likedness.xlsx', index = False)
+    save_df_to_excel_with_standard_width(df2_copy,'questions/optimum_number_of_stories_likedness.xlsx', column_width= 20)
+    visualize_optimum_number_of_stories_likedness(df2_copy)
