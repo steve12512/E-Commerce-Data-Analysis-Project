@@ -151,8 +151,6 @@ def optimum_number_of_stories_liked(df2):
         Number_of_listings = ('Standardized_Experience', 'size'),
         Most_Common_Number_of_Stories = ('number_of_stories', lambda x : x.mode())).reset_index()
     #visualize and save the result
-    visualize_optimum_number_of_stories_likedness(df2_copy)
-    #save the result
     df2_copy.to_excel('questions/optimum_number_of_stories_likedness.xlsx', index = False)
     save_df_to_excel_with_standard_width(df2_copy,'questions/optimum_number_of_stories_likedness.xlsx', column_width= 20)
     visualize_optimum_number_of_stories_likedness(df2_copy)

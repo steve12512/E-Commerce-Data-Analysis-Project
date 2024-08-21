@@ -56,7 +56,7 @@ def visualize_optimum_number_of_stories_profit(df1):
 
     # Adding the values on top of each bar
     for index, value in enumerate(df1['Average Profit']):
-        plt.text(index, value + 200, f'{int(value)}', ha='center', va='bottom')
+        plt.text(index, value, f'{int(value)}', ha='center', va='bottom')
     plt.tight_layout()
     plt.show()
 
