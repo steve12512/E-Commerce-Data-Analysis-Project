@@ -1,7 +1,7 @@
 import pandas as pd
 from mlxtend.frequent_patterns import apriori, association_rules
 
-def find_frequent_product_combinations(df, min_support=0.01, min_confidence=0.5):
+def find_frequent_product_combinations(df, dictionary, min_support=0.01, min_confidence=0.5):
     """
     Find frequent product combinations and generate association rules.
 
@@ -26,11 +26,15 @@ def find_frequent_product_combinations(df, min_support=0.01, min_confidence=0.5)
     # Generate association rules
     rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=min_confidence)
     rules = rules.sort_values(by='confidence', ascending=False)
+    
+    frequent_itemsets['itemsets'] = frequent_itemsets['itemsets'].apply(lambda x: frozenset([dictionary[code] for code in x]))
+    rules['antecedents'] = rules['antecedents'].apply(lambda x: frozenset([dictionary[code] for code in x]))
+    rules['consequents'] = rules['consequents'].apply(lambda x: frozenset([dictionary[code] for code in x]))
     return frequent_itemsets, rules
 
 
 
-def associate_together(df1):
+def associate_together(df1, dictionary):
     # This function attempts to find which tours go together by using association rules
     df1_copy = df1.copy()  # Copy our version of dataframe1
 
@@ -39,7 +43,7 @@ def associate_together(df1):
 
     # Group by country and process each group
     for country, group in df1_copy.groupby('Country'):
-        frequent_itemsets, rules = find_frequent_product_combinations(group)
+        frequent_itemsets, rules = find_frequent_product_combinations(group, dictionary)
         results[country] = {'frequent_itemsets': frequent_itemsets, 'rules': rules}
 
     # Optionally, save results to files
