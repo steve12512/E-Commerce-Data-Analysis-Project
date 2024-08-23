@@ -30,16 +30,17 @@ def find_frequent_product_combinations(df, min_support=0.01, min_confidence=0.5)
 
 
 
-
 def associate_together(df1):
-    #this function attempts to find which tours go together by using association rules
-    df1_copy = df1.copy() #copy our verison of dataframe1
-    
-    df1_copy = df1_copy.groupby('country').size().reset_index()
-    # Group by country and process each group
+    # This function attempts to find which tours go together by using association rules
+    df1_copy = df1.copy()  # Copy our version of dataframe1
+
+    # Initialize a dictionary to store results for each country
     results = {}
-    for country, group in df1.groupby('country'):
-        results[country] = find_frequent_product_combinations(group)
+
+    # Group by country and process each group
+    for country, group in df1_copy.groupby('Country'):
+        frequent_itemsets, rules = find_frequent_product_combinations(group)
+        results[country] = {'frequent_itemsets': frequent_itemsets, 'rules': rules}
 
     # Optionally, save results to files
     for country, result in results.items():
@@ -53,3 +54,5 @@ def associate_together(df1):
         print(result['frequent_itemsets'])
         print("Association Rules:")
         print(result['rules'])
+
+    return results

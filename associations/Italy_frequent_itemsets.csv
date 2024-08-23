@@ -1,0 +1,6 @@
+support,itemsets
+0.8785046728971962,frozenset({'288DE'})
+0.8785046728971962,frozenset({'STL284'})
+0.8785046728971962,"frozenset({'STL284', '288DE'})"
+0.08224299065420561,frozenset({'TO284DE'})
+0.03177570093457944,frozenset({'AU284DE'})
