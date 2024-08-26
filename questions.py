@@ -154,3 +154,16 @@ def optimum_number_of_stories_liked(df2):
     df2_copy.to_excel('questions/optimum_number_of_stories_likedness.xlsx', index = False)
     save_df_to_excel_with_standard_width(df2_copy,'questions/optimum_number_of_stories_likedness.xlsx', column_width= 20)
     visualize_optimum_number_of_stories_likedness(df2_copy)
+
+    
+    
+def common_booking_hours(dataframe1):
+    #this function, finds for each country, the most common booking hours
+    df1 = dataframe1.copy()
+    df1_copy = df1.groupby('Country').agg(
+        Most_Common_Booking_hours=('booking_hour', lambda x: ', '.join(
+            [str(hour) for hour in x.value_counts().index[:4]]  # Sort by frequency and get top 4
+        ))
+    ).reset_index()
+    df1_copy.to_excel('questions/most_common_hours.xlsx', index = False)
+    return df1_copy
