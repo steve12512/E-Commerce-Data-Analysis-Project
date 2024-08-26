@@ -20,6 +20,7 @@ def successful_tour_looks_like(dataframe1, dataframe2):
 
     # Group by country and month, find insights, and calculate the top 3 most common travel days and their counts
     df1 = df1.groupby(['Country', 'month']).agg(
+        most_common_tour = ('stories', lambda x : x.mode().tolist()[0:4]),
         average_travellers=('num_of_travellers', 'mean'), 
         Total_Travellers=('num_of_travellers', 'size'),
         Average_number_of_products=('num_products', 'mean'),
@@ -37,8 +38,7 @@ def successful_tour_looks_like(dataframe1, dataframe2):
     df1 = df1.sort_values(by='Total_profit', ascending=False)
 
     # Save the result to an Excel file
-    df1.to_excel('questions/successful_tour_looks_like.xlsx', index=False)
-    save_df_to_excel_with_standard_width(df1,'successful_tours_looks_like.xlsx', column_width= 20)
+    save_df_to_excel_with_standard_width(df1,'questions/successful_tours_looks_like.xlsx', column_width= 20)
     return df1
 
 
@@ -149,7 +149,7 @@ def optimum_number_of_stories_liked(df2):
     df2_copy = df2.copy()
     df2_copy = df2_copy.groupby('Standardized_Experience').agg(
         Number_of_listings = ('Standardized_Experience', 'size'),
-        Most_Common_Number_of_Stories = ('number_of_stories', lambda x : x.mode())).reset_index()
+        Most_Common_Number_of_Stories = ('number_of_stories', lambda x : x.mode().iloc[0])).reset_index()
     #visualize and save the result
     df2_copy.to_excel('questions/optimum_number_of_stories_likedness.xlsx', index = False)
     save_df_to_excel_with_standard_width(df2_copy,'questions/optimum_number_of_stories_likedness.xlsx', column_width= 20)
@@ -162,7 +162,7 @@ def common_booking_hours(dataframe1):
     df1 = dataframe1.copy()
     df1_copy = df1.groupby('Country').agg(
         Most_Common_Booking_hours=('booking_hour', lambda x: ', '.join(
-            [str(hour) for hour in x.value_counts().index[:4]]  # Sort by frequency and get top 4
+            [str(hour) for hour in x.value_counts().index[:6]]  # Sort by frequency and get top 4
         ))
     ).reset_index()
     df1_copy.to_excel('questions/most_common_hours.xlsx', index = False)
