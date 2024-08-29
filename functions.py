@@ -377,7 +377,7 @@ def codes_to_profit(key, df1):
     #if no match found, return NaN
     return np.nan
 
-def travellers_vs_spending(df):
+def travellers_vs_spending_with_months(df):
     #
     #group by country and month, find insights, and calculate the top 3 most common travel days and their counts
     df1 = df.groupby(['Country', 'month']).agg(
@@ -395,4 +395,16 @@ def travellers_vs_spending(df):
 
     # Sort values based on total profit, descending
     df1 = df1.sort_values(by='Total_profit', ascending=False)
-    plot_travellers_vs_spending(df1)
+    plot_travellers_vs_spending_with_months(df1)
+    
+    
+def country_spending(df):
+    #
+    
+    sum_of_spending = df.copy()
+    sum_of_spending = sum_of_spending.groupby(['Country']).agg(
+        total_travellers = ('num_of_travellers', 'mean'),
+        sum_of_profit = ('Profit', 'sum'),
+        sum_of_spending = ('retail_price', 'sum')
+    ).reset_index()
+    visualize_country_spending(sum_of_spending)

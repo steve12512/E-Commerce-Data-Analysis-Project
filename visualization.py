@@ -3,7 +3,7 @@ import seaborn as sns
 import numpy as np
 
 #this file contains the functions used for data visualization
-def plot_travellers_vs_spending(df1):
+def plot_travellers_vs_spending_with_months(df1):
     """
     Plot the relationship between the average number of travellers and the average money spent.
     
@@ -69,3 +69,37 @@ def visualize_optimum_number_of_stories_likedness(df):
     plt.xlabel('Experience Rating')
     plt.ylabel('Most Common Number of Stories')
     plt.show()
+    
+    
+
+def visualize_country_spending(df_summary):
+    """
+    Visualizes the total number of travellers, sum of profit, and sum of spending per country.
+
+    Parameters:
+    df_summary (pd.DataFrame): The summarized dataframe containing 'Country', 'total_travellers', 'sum_of_profit', and 'sum_of_spending' columns.
+
+    Returns:
+    None
+    """
+    # Set the size of the plot
+    plt.figure(figsize=(14, 8))
+    
+    # Plot the sum of spending per country
+    plt.subplot(2, 1, 1)
+    sns.barplot(x='Country', y='sum_of_spending', data=df_summary, palette='viridis')
+    plt.title('Sum of Spending by Country')
+    plt.xticks(rotation=45)
+    plt.ylabel('Sum of Spending')
+    
+    # Plot the sum of profit per country
+    plt.subplot(2, 1, 2)
+    sns.barplot(x='Country', y='sum_of_profit', data=df_summary, palette='magma')
+    plt.title('Sum of Profit by Country')
+    plt.xticks(rotation=45)
+    plt.ylabel('Sum of Profit')
+    
+    # Adjust layout to prevent overlap
+    plt.tight_layout()
+    plt.show()
+    
