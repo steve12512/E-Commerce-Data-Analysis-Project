@@ -1,5 +1,9 @@
 import pandas as pd
 from mlxtend.frequent_patterns import apriori, association_rules
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def find_frequent_product_combinations(df, dictionary, min_support=0.01, min_confidence=0.5):
     """
@@ -60,3 +64,64 @@ def associate_together(df1, dictionary):
         print(result['rules'])
 
     return results
+
+
+def clusters(df):
+    # Step 1: Filter the data for Greece
+    greece_df = df[df['Country'] == 'Greece'].copy()
+
+    # Step 2: Select relevant features for clustering
+    features = ['num_of_travellers', 'Profit', 'retail_price']  # Add more features if needed
+    X = greece_df[features]
+
+    # Step 3: Standardize the features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Step 4: Use the elbow method to find the optimal number of clusters
+    wcss = []  # Within-cluster sum of squares
+    for i in range(1, 11):
+        kmeans = KMeans(n_clusters=i, random_state=42)
+        kmeans.fit(X_scaled)
+        wcss.append(kmeans.inertia_)
+
+    # Plot the elbow graph
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, 11), wcss, marker='o', linestyle='--')
+    plt.title('Elbow Method for Optimal Number of Clusters')
+    plt.xlabel('Number of Clusters')
+    plt.ylabel('WCSS')
+    plt.show()
+
+    # Step 5: Fit the KMeans model with the optimal number of clusters (e.g., k=3)
+    kmeans = KMeans(n_clusters=3, random_state=42)
+    greece_df['Cluster'] = kmeans.fit_predict(X_scaled)
+
+    # Step 6: Analyze and visualize the clusters
+    plt.figure(figsize=(12, 6))
+    sns.scatterplot(data=greece_df, x='num_of_travellers', y='Profit', hue='Cluster', palette='viridis', s=100)
+    plt.title('Clusters of Listings in Greece')
+    plt.xlabel('Number of Travellers')
+    plt.ylabel('Profit')
+    plt.legend(title='Cluster')
+    plt.show()
+
+    # Optional: Save the clustered data
+    greece_df.to_csv('greece_clustered_listings.csv', index=False)
+    cluster_summary = greece_df.groupby('Cluster').agg(
+        avg_num_of_travellers=('num_of_travellers', 'mean'),
+        total_travellers=('num_of_travellers', 'sum'),
+        avg_profit=('Profit', 'mean'),
+        total_profit=('Profit', 'sum'),
+        avg_spending=('retail_price', 'mean'),
+        total_spending=('retail_price', 'sum'),
+        most_common_tours=('product_code', lambda x: x.mode().iloc[0]),  # Most frequently booked tour
+        most_common_travel_day=('travel_day', lambda x: x.mode().iloc[0]),  # Most common travel day
+        count_listings=('product_code', 'size')  # Number of listings in the cluster
+    ).reset_index()
+
+    # Step 3: Display the cluster summary
+    print(cluster_summary)
+
+    # Optional: Save the summary to a CSV file for further analysis
+    cluster_summary.to_csv('greece_cluster_summary.csv', index=False)
