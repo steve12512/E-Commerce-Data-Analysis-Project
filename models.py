@@ -117,7 +117,7 @@ def clusters(df):
         plt.show()
 
         # Optional: Save the clustered data
-        country_df.to_csv(f'{country.lower()}_clustered_listings.csv', index=False)
+        country_df.to_csv(f'clusters/{country.lower()}_clustered_listings.csv', index=False)
         
         # Cluster summary
         cluster_summary = country_df.groupby('Cluster').agg(
@@ -137,5 +137,5 @@ def clusters(df):
         print(cluster_summary)
 
         # Optional: Save the summary to a CSV file for further analysis
-        cluster_summary.to_csv(f'{country.lower()}_cluster_summary.csv', index=False)
+        cluster_summary.to_csv(f'clusters/{country.lower()}_cluster_summary.csv', index=False)
 
