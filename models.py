@@ -4,7 +4,7 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from functions import save_df_to_excel_with_standard_width
 def find_frequent_product_combinations(df, dictionary, min_support=0.01, min_confidence=0.5):
     """
     Find frequent product combinations and generate association rules.
@@ -118,6 +118,13 @@ def clusters(df):
 
         # Optional: Save the clustered data
         country_df.to_csv(f'clusters/{country.lower()}_clustered_listings.csv', index=False)
+
+        #do the same, this time by having the listings grouped by cluster
+        grouped_clustered_df = country_df.groupby('Cluster').apply(lambda x: x).reset_index(drop=True)
+        #grouped_clustered_df.to_excel(f'clusters/{country.lower()}_grouped_clustered_listings.xlsx', index=False)
+        
+        string = (f'clusters/{country.lower()}_grouped_clustered_listings.xlsx')
+        save_df_to_excel_with_standard_width(grouped_clustered_df, string, column_width = 15)
         
         # Cluster summary
         cluster_summary = country_df.groupby('Cluster').agg(
@@ -127,8 +134,8 @@ def clusters(df):
             total_profit=('Profit', 'sum'),
             avg_spending=('retail_price', 'mean'),
             total_spending=('retail_price', 'sum'),
-            most_common_tours=('product_code', lambda x: x.mode().iloc[0]),  # Most frequently booked tour
-            most_common_travel_day=('travel_day', lambda x: x.mode().iloc[0]),  # Most common travel day
+            most_common_tours=('product_code', lambda x: ', '.join(x.mode().iloc[:4])),
+            most_common_travel_days=('travel_day', lambda x: ', '.join(x.mode().astype(str).iloc[0:4])),  # Join the top 4 most common travel days into a strin# Most frequently booked tour
             count_listings=('product_code', 'size')  # Number of listings in the cluster
         ).reset_index()
 
