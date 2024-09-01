@@ -13,19 +13,6 @@ def successful_tour_looks_like(dataframe1, dataframe2):
     df1['num_products'] = df1['product_code'].apply(lambda x: len(x.split('_')))
 
     # Group by country and month, find insights, and calculate the top 3 most common travel days and their counts
-    df1_grouped = df1.groupby(['Country', 'month']).agg(
-        most_common_tour = ('stories', lambda x : x.mode().tolist()[0:4]),
-        average_travellers=('num_of_travellers', 'mean'), 
-        Total_Travellers=('num_of_travellers', 'size'),
-        Average_number_of_products=('num_products', 'mean'),
-        Total_profit=('Profit', 'sum'),
-        Average_profit = ('Profit', 'mean'),
-        Top_3_travel_days=('travel_day', lambda x: Counter(x).most_common(3)), 
-        Average_Money_Spent_per_group = ('retail_price', 'mean'),
-        average_money_spent_per_traveller = ('money_spent_per_traveller', 'mean'),
-        most_common_languages=('language', lambda x: x.mode().tolist()[:3]),
-        most_common_number_of_stories = ('number_of_stories', lambda x: x.mode().tolist()[0])
-    ).reset_index()
 
     #keep listings that have at least 30 travellers
     df1_grouped = df1_grouped[df1_grouped['Total_Travellers'] > 30]
@@ -178,6 +165,7 @@ def common_booking_hours(dataframe1):
     return df1_copy
 
 def successful_tour_looks_like_without_months(dataframe1, dataframe2):
+    #
     df1 = dataframe1.copy()
 
     # Calculate the number of products per listing
@@ -204,5 +192,22 @@ def successful_tour_looks_like_without_months(dataframe1, dataframe2):
 
     # Save the result to an Excel file
     save_df_to_excel_with_standard_width(df1_filtered, 'questions/successful_tours_look_like_WITHOUT_MONTHS.xlsx', column_width=20)
-
     return df1_filtered
+
+def find_info_for_spain(df):
+    #this function provides information for spain. let us start by copying our dataframe
+    coppy= df.copy()
+    spain = coppy[coppy['Country'] == 'Spain']
+
+    #groupby stories and find info
+    spain = spain.groupby('stories').agg(
+        occurences = ('stories', 'size'),
+        average_travellers=('num_of_travellers', 'mean'), 
+        Total_Travellers=('num_of_travellers', 'size'),
+        Total_profit=('Profit', 'sum'),
+        Average_profit = ('Profit', 'mean'),
+        Top_3_travel_days=('travel_day', lambda x: Counter(x).most_common(3)),        
+        most_common_languages=('language', lambda x: x.mode().tolist()[:3])
+        ).reset_index()
+    spain = spain.sort_values(by = 'occurences', ascending = False)
+    return spain
