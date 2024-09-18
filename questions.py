@@ -9,34 +9,37 @@ def successful_tour_looks_like(dataframe1, dataframe2):
     df1 = dataframe1.copy()
     df2 = dataframe2.copy()
 
+    # Calculate the profit mean for the tours in dataframe1
+    mean = df1['Profit'].mean()
+
+    # Filter the listings in dataframe1 that have a profit higher than the average
+    df1 = df1[df1['Profit'] > mean]
+
     # Calculate the number of products per listing
     df1['num_products'] = df1['product_code'].apply(lambda x: len(x.split('_')))
 
     # Group by country and month, find insights, and calculate the top 3 most common travel days and their counts
+    df1 = df1.groupby(['Country', 'month']).agg(
+        most_common_tour = ('stories', lambda x : x.mode().tolist()[0:4]),
+        average_travellers=('num_of_travellers', 'mean'), 
+        Total_Travellers=('num_of_travellers', 'size'),
+        Average_number_of_products=('num_products', 'mean'),
+        Total_profit=('Profit', 'sum'),
+        Top_3_travel_days=('travel_day', lambda x: Counter(x).most_common(3)), 
+        Average_Money_Spent_per_group = ('retail_price', 'mean'),
+        average_money_spent_per_traveller = ('money_spent_per_traveller', 'mean'),
+        most_common_languages=('language', lambda x: x.mode().tolist()[:3]),
+        most_common_number_of_stories = ('number_of_stories', lambda x: x.mode().tolist()[0])     
+    ).reset_index()
 
     #keep listings that have at least 30 travellers
-    df1_grouped = df1_grouped[df1_grouped['Total_Travellers'] > 30]
-    
-    #keep listings that have a profit >= of the country's mean
-
-    country_means = df1_grouped.groupby('Country')['Total_profit'].mean().reset_index()
-    country_means.rename(columns={'Total_profit': 'country_mean_profit'}, inplace=True)
-    
-    # Step 2: Merge the country means back into the grouped DataFrame
-    df1_grouped = df1_grouped.merge(country_means, on='Country', how='left')
-    country_means.rename(columns={'Total_profit': 'country_mean_profit'}, inplace=True)
-    
-    # Step 3: Filter listings where the Total_profit is higher than the country's mean profit
-    df1_filtered = df1_grouped[df1_grouped['Total_profit'] > df1_grouped['country_mean_profit']]
-
-    
+    df1 = df1[df1['Total_Travellers'] > 30]
     # Sort values based on total profit, descending
-    df1_filtered = df1_filtered.sort_values(by='Total_profit', ascending=False)
+    df1 = df1.sort_values(by='Total_profit', ascending=False)
 
     # Save the result to an Excel file
-    save_df_to_excel_with_standard_width(df1_filtered,'questions/successful_tours_looks_like.xlsx', column_width= 20)
-    return df1_filtered
-
+    save_df_to_excel_with_standard_width(df1,'questions/successful_tours_looks_like.xlsx', column_width= 20)
+    return df1
 
 
 
